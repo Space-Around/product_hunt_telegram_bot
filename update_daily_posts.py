@@ -122,7 +122,7 @@ def main():
       cursor.execute(sql, [ph_post_id, ])
 
       if cursor.fetchone():
-         return None
+         continue
          
       loop = asyncio.new_event_loop()
       asyncio.set_event_loop(loop)

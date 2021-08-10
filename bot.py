@@ -276,8 +276,6 @@ def callback_query(call):
         next_post_order = post_order - 1
 
         if next_post_order == 1999:
-            print("here")
-
             sql = "SELECT * FROM last_posts"
             cursor.execute(sql)
             posts = cursor.fetchall()
@@ -290,13 +288,9 @@ def callback_query(call):
 
         post = cursor.fetchone()
 
-        print("----------")
-        print(next_post_order)
-        print("----------")
-
         if not post:            
             print("cant find post in last_posts")
-            
+
             sql = "SELECT * FROM super_old_posts WHERE chat_id = ? and post_order = ?;"
             cursor.execute(sql, [chat_id, str(next_post_order)])
             post = cursor.fetchone()
@@ -363,6 +357,19 @@ def callback_query(call):
         post_order = int(row[4])
         prev_post_order = post_order + 1
 
+        if prev_post_order == 900:
+            
+            print("Upload posts when post order 900")
+
+            sql = "SELECT * FROM last_posts"
+            cursor.execute(sql)
+
+            posts_tmp = cursor.fetchall()
+            ph_cursor = posts_tmp[len(posts_tmp) - 1][10]
+
+            # bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = "Prepare\.\.\.", parse_mode="MarkdownV2")
+            os.system("python ./upload_prev_posts.py " + str(chat_id) + " after " + ph_cursor)
+
         sql = "SELECT * FROM last_posts WHERE post_order = ? and lang = ?;"
         cursor.execute(sql, [prev_post_order, lang])
 
@@ -378,7 +385,7 @@ def callback_query(call):
 
 
             if not post:
-                print("Upload posts")
+                print("Upload posts when end of posts in all db")
                 bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = "Prepare\.\.\.", parse_mode="MarkdownV2")
                 os.system("python ./upload_prev_posts.py " + str(chat_id) + " after")
 
