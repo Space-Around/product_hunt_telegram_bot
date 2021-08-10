@@ -50,8 +50,9 @@ async def task(ph_post_id, lang, name, tagline,
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('chat_id', help="Enter number to set chat id.")
-    parser.add_argument('direction', help="Enter string to set direction.")
+    parser.add_argument('chat_id', help = "Enter number to set chat id.")
+    parser.add_argument('direction', help = "Enter string to set direction.")
+    parser.add_argument('ph_cursor', default = "", nargs = "?", help = "Enter string to set ph cursor.")
     args = parser.parse_args()
 
     chat_id = args.chat_id
@@ -90,10 +91,6 @@ def main():
 
     langs = ["en", "ru", "ar", "zh", "fr", "de", "hi", "id", "ga", "it", "ja", "ko", "pl", "pt", "es", "tr", "vi"]
 
-    sql = "DELETE FROM super_old_posts WHERE chat_id = ?;"
-    cursor.execute(sql, [chat_id, ])
-    conn.commit()
-
     sql = "SELECT * FROM chats WHERE id = ?;"
     cursor.execute(sql, [chat_id, ])
 
@@ -102,12 +99,23 @@ def main():
     if not chat:
         return None
 
-    ph_cursor = chat[3]
+    if args.ph_cursor is None:
+        ph_cursor = chat[3]
+    else:
+        ph_cursor = args.ph_cursor
 
     # get posts from product hunt
     posts = app.get_posts_by_cursor(count = 20, direction = direction, cursor = ph_cursor)
 
-    post_order = 2000
+    sql = "SELECT * FROM super_old_posts WHERE chat_id = ?;"
+    cursor.execute(sql, [chat_id, ])
+
+    posts_tmp = cursor.fetchall()
+
+    if posts_tmp:
+        post_order = 2000 + (len(posts_tmp) / 17)
+    else:
+        post_order = 2000
 
     for post in posts:
         ph_post_id = post["id"]
@@ -126,7 +134,14 @@ def main():
         tg_website = prepare_markdown(website)
 
         tg_website = tg_website[0:tg_website.find("?")]
-            
+        
+        # check if post already exist in db then don't add
+        sql = "SELECT * FROM last_posts WHERE ph_id = ?"
+        cursor.execute(sql, [ph_post_id, ])
+
+        if cursor.fetchone():
+            continue
+
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
