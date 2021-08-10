@@ -257,8 +257,6 @@ def callback_query(call):
     elif call.data == "cb_up":
         pass
     elif call.data == "cb_next":
-        bot.answer_callback_query(call.id)
-
         chat_id = call.from_user.id
         message_id = call.message.id
 
@@ -274,6 +272,10 @@ def callback_query(call):
         lang = row[1]
         post_order = int(row[4])
         next_post_order = post_order - 1
+
+        if next_post_order == 0:
+            bot.answer_callback_query(call.id, text = "You have reached the beginning")
+            return None
 
         if next_post_order == 1999:
             sql = "SELECT * FROM last_posts"
@@ -333,14 +335,14 @@ def callback_query(call):
 
         message = name + "\n" + tagline + "\n\n" + description + "\n" + tg_website
 
+        bot.answer_callback_query(call.id)
+
         if youtube_link:
             bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = message, parse_mode="MarkdownV2", disable_web_page_preview = False, reply_markup = not_auth_post_youtube_switch_gen_markup(vote_count, youtube_link))
         else:
             bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = message, parse_mode="MarkdownV2", disable_web_page_preview = False, reply_markup = not_auth_post_switch_gen_markup(vote_count))            
                 
     elif call.data == "cb_back":
-        bot.answer_callback_query(call.id)
-
         chat_id = call.from_user.id
         message_id = call.message.id
 
@@ -386,6 +388,9 @@ def callback_query(call):
 
             if not post:
                 print("Upload posts when end of posts in all db")
+
+                bot.answer_callback_query(call.id, text = "Please wait, posts are being prepared")
+
                 bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = "Prepare\.\.\.", parse_mode="MarkdownV2")
                 os.system("python ./upload_prev_posts.py " + str(chat_id) + " after")
 
@@ -415,6 +420,8 @@ def callback_query(call):
         conn.commit()
 
         message = name + "\n" + tagline + "\n\n" + description + "\n" + tg_website
+
+        bot.answer_callback_query(call.id)
 
         if youtube_link:
             bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = message, parse_mode="MarkdownV2", disable_web_page_preview = False, reply_markup = not_auth_post_youtube_switch_gen_markup(vote_count, youtube_link))
