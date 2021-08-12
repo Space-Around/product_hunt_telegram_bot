@@ -16,6 +16,8 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 user_auth_url = ""
 
+
+
 bot = telebot.TeleBot(config.TELEGRAM_TOKEN)
 conn = sqlite3.connect("ph_ideas.db", check_same_thread = False)
 cursor = conn.cursor()
@@ -23,10 +25,6 @@ cursor = conn.cursor()
 cursor.execute("""CREATE TABLE IF NOT EXISTS  chats
                   (id text, lang text, access_grant text, cursor text, post_order integer)
                """)
-
-# cursor.execute("""CREATE TABLE IF NOT EXISTS posts
-#                   (id text, name text, tagline text, description text, url text, lang text)
-#                """)
 
 app = ph_api.OAuth(
         domain = config.PH_API_DOMAIN,

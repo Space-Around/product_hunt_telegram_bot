@@ -1,3 +1,4 @@
+import os
 import config
 import logging
 import requests
@@ -10,7 +11,10 @@ class OAuth:
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token = ""
-
+        
+        if not os.path.exists(config.LOGS_PATH):
+            os.makedirs(config.LOGS_PATH)
+            
         logging.basicConfig(filename = config.LOGS_PATH + "ph_api.log")
 
     def token(self):
