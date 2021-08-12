@@ -6,6 +6,7 @@ import config
 import asyncio
 import sqlite3
 import telebot
+import subprocess
 import emoji_regex
 # from threading import Thread
 import multiprocessing as mp
@@ -315,26 +316,20 @@ def callback_query(call):
 
             print(str(chat_id) + " | " + str(next_post_order))
 
-            if not post:
-                print("Upload posts")
-                bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = "Prepare\.\.\.", parse_mode="MarkdownV2")
-                os.system("python ./upload_prev_posts.py " + str(chat_id) + " before")
+            # if not post:
+            #     print("Upload posts")
+            #     bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = "Prepare\.\.\.", parse_mode="MarkdownV2")
+            #     os.system("python ./upload_prev_posts.py " + str(chat_id) + " before")
 
-                while True:
-                    sql = "SELECT * FROM super_old_posts WHERE chat_id = ?;"
-                    cursor.execute(sql, [chat_id, ])
-                    post = cursor.fetchone()
+            #     sql = "SELECT * FROM super_old_posts WHERE chat_id = ?;"
+            #     cursor.execute(sql, [chat_id, ])
+            #     post = cursor.fetchone()
 
-                    if post:
-                        break
+            #     # sql = "SELECT * FROM super_old_posts WHERE chat_id = ?"
+            #     # cursor.execute(sql, [chat_id, ])
+            #     max_post_order = len(cursor.fetchone())
 
-                    time.sleep(0.1)
-
-                sql = "SELECT * FROM super_old_posts WHERE chat_id = ?"
-                cursor.execute(sql, [chat_id, ])
-                max_post_order = len(cursor.fetchone())
-
-                next_post_order = max_post_order
+            #     next_post_order = max_post_order
 
         post_order = post[1]
         name = post[4]
@@ -350,8 +345,6 @@ def callback_query(call):
         conn.commit()
 
         message = name + "\n" + tagline + "\n\n" + description + "\n" + tg_website
-
-        bot.answer_callback_query(call.id)
 
         if youtube_link:
             bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = message, parse_mode="MarkdownV2", disable_web_page_preview = False, reply_markup = not_auth_post_youtube_switch_gen_markup(vote_count, youtube_link))
@@ -405,22 +398,17 @@ def callback_query(call):
             if not post:
                 print("Upload posts when end of posts in all db")
 
-                bot.answer_callback_query(call.id, text = "Please wait, posts are being prepared")
+                # bot.answer_callback_query(call.id, text = "Please wait, posts are being prepared")
 
                 bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = "Prepare\.\.\.", parse_mode="MarkdownV2")
                 os.system("python ./upload_prev_posts.py " + str(chat_id) + " after")
+                print(chat_id)
+                print(prev_post_order)
+                sql = "SELECT * FROM super_old_posts WHERE chat_id = ? and post_order = ?;"
+                cursor.execute(sql, [chat_id, prev_post_order])
+                post = cursor.fetchone()
 
-                while True:
-                    sql = "SELECT * FROM super_old_posts WHERE chat_id = ?;"
-                    cursor.execute(sql, [chat_id, ])
-                    post = cursor.fetchone()
-
-                    if post:
-                        break
-
-                    time.sleep(0.1)
-
-                prev_post_order = 2000
+                print(post)
 
         post_order = post[1]
         name = post[4]
@@ -437,7 +425,7 @@ def callback_query(call):
 
         message = name + "\n" + tagline + "\n\n" + description + "\n" + tg_website
 
-        bot.answer_callback_query(call.id)
+        # bot.answer_callback_query(call.id)
 
         if youtube_link:
             bot.edit_message_text(chat_id = chat_id, message_id = message_id, text = message, parse_mode="MarkdownV2", disable_web_page_preview = False, reply_markup = not_auth_post_youtube_switch_gen_markup(vote_count, youtube_link))

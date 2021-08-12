@@ -59,17 +59,16 @@ def main():
     direction = args.direction
 
     app = ph_api.OAuth(
-            domain = config.PH_API_DOMAIN,
-            client_id = config.PH_API_CLIENT_ID,
-            client_secret = config.PH_API_CLIENT_SECRET
-        )
+        domain = config.PH_API_DOMAIN,
+        client_id = config.PH_API_CLIENT_ID,
+        client_secret = config.PH_API_CLIENT_SECRET)
 
     lt = LibreTranslateAPI(config.TRANSLATE_URL)
 
     conn = sqlite3.connect("ph_ideas.db", check_same_thread = False)
     cursor = conn.cursor()
 
-    # cursor.execute("DROP TABLE IF EXISTS last_posts")
+    # cursor.execute("DROP TABLE IF EXISTS super_old_posts")
 
     cursor.execute("""CREATE TABLE IF NOT EXISTS super_old_posts
                     (
@@ -99,10 +98,10 @@ def main():
     if not chat:
         return None
 
-    if args.ph_cursor is None:
-        ph_cursor = chat[3]
-    else:
+    if len(args.ph_cursor) > 0:
         ph_cursor = args.ph_cursor
+    else:
+        ph_cursor = chat[3]
 
     # get posts from product hunt
     posts = app.get_posts_by_cursor(count = 20, direction = direction, cursor = ph_cursor)
@@ -113,12 +112,13 @@ def main():
     posts_tmp = cursor.fetchall()
 
     if posts_tmp:
-        post_order = 2000 + (len(posts_tmp) / 17)
+        post_order = 2000 + int((len(posts_tmp) / 17))
     else:
         post_order = 2000
 
     for post in posts:
         ph_post_id = post["id"]
+        print("ph_post_id: " + str(ph_post_id))
         name = post["name"]
         tagline = post["tagline"]
         description = post["description"]
@@ -164,4 +164,6 @@ def main():
         post_order = post_order + 1
 
 if __name__ == "__main__":
-   main()
+    print("upload_prev_posts: start")
+    main()
+    print("upload_prev_posts: stop")
