@@ -26,6 +26,24 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS  chats
                   (id text, lang text, access_grant text, cursor text, post_order integer)
                """)
 
+cursor.execute("""CREATE TABLE IF NOT EXISTS super_old_posts
+                (
+                id INTEGER PRIMARY KEY,
+                post_order TEXT,
+                ph_id TEXT,
+                lang TEXT,
+                title TEXT,
+                tag TEXT,
+                description TEXT,
+                votes TEXT,
+                youtube TEXT,
+                website TEXT,
+                cursor TEXT,
+                added_to_db_at TEXT,
+                chat_id TEXT
+                )
+            """)               
+
 app = ph_api.OAuth(
         domain = config.PH_API_DOMAIN,
         client_id = config.PH_API_CLIENT_ID,
